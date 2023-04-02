@@ -8,7 +8,7 @@ Limitations:
 - Only WebGL is supported for clients
 - There's no P2P support and clients cannot be hosts
 - Clients cannot be tested in Unity Editor, it only works in WebGL builds
-- HTTPS support is not implemented
+- HTTPS support is not implemented so you will need a reverse proxy to estabilish the initial connection to the server
 
 Installation: 
 - Copy this folder to Assets/FishNet/Runtime/Transporting/Transports/
