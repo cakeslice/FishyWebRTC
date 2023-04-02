@@ -1,0 +1,16 @@
+{
+   "name": "com.cakeslice.fishy-webrtc",
+   "displayName": "Fishy WebRTC",
+   "version": "1.0.0",
+   "unity": "2019.4",
+   "description": "Transport for Fish-Networking using the WebRTC protocol. Includes a WebRTC server and a WebGL client.",
+   "author": "José Guerreiro",
+   "repository": {
+      "type": "git",
+      "url": ""
+   },
+   "dependencies": {
+      "com.unity.webrtc": "3.0.0-pre.4"
+   },
+   "samples": []
+}
