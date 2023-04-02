@@ -11,5 +11,6 @@ Limitations:
 - HTTPS support is not implemented so you will need a reverse proxy to estabilish the initial connection to the server
 
 Installation: 
-- Copy this folder to Assets/FishNet/Runtime/Transporting/Transports/
-- Add the FishyWebRTC transport to your TransportManager
+- Add the `com.unity.webrtc` dependency using the Package Manager
+- Copy this folder to `Assets/FishNet/Runtime/Transporting/Transports/`
+- Add the `FishyWebRTC` transport component to your `TransportManager`
