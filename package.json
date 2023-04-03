@@ -10,7 +10,7 @@
       "url": ""
    },
    "dependencies": {
-      "com.unity.webrtc": "3.0.0-pre.4"
+      "com.unity.webrtc": "https://github.com/cakeslice/com.unity.webrtc.git/#data-only"
    },
    "samples": []
 }
