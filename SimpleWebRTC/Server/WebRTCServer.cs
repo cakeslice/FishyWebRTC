@@ -104,7 +104,7 @@ namespace cakeslice.SimpleWebRTC
 						HttpListenerRequest req = ctx.Request;
 						HttpListenerResponse resp = ctx.Response;
 
-						if (req.Url.AbsolutePath == "/offer/")
+						if (req.Url.AbsolutePath.Contains("/offer/"))
 						{
 							resp.Headers["Access-Control-Allow-Origin"] = "*"; // TODO: Make this configurable
 							resp.Headers["Access-Control-Allow-Methods"] = "GET";
@@ -117,7 +117,7 @@ namespace cakeslice.SimpleWebRTC
 								continue;
 							}
 							
-							Connection conn = new Connection(GetNextId(),  maxMessageSize, req.RemoteEndPoint.ToString(), AfterConnectionDisposed);
+							Connection conn = new Connection(GetNextId(), maxMessageSize, req.RemoteEndPoint.ToString(), AfterConnectionDisposed);
 							Connection.Config receiveConfig = new Connection.Config(
 									conn,
 									maxMessageSize,
@@ -132,7 +132,7 @@ namespace cakeslice.SimpleWebRTC
 							offerThread.IsBackground = true;
 							offerThread.Start();
 						}
-						else if (req.Url.AbsolutePath == "/answer/")
+						else if (req.Url.AbsolutePath.Contains("/answer/"))
 						{
 							resp.Headers["Access-Control-Allow-Origin"] = "*";  // TODO: Make this configurable
 							resp.Headers["Access-Control-Allow-Methods"] = "POST";
