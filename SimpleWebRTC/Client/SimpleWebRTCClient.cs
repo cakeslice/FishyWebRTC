@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace cakeslice.SimpleWebRTC
 {
@@ -92,7 +93,7 @@ namespace cakeslice.SimpleWebRTC
 			}
 		}
 
-		public abstract void Connect(Uri serverAddress, string stunTurnAddress);
+		public abstract void Connect(List<Common.ICEServer> iceServers, Uri serverAddress);
 		public abstract void Disconnect();
 		public abstract void Send(ArraySegment<byte> segment, Common.DeliveryMethod dm);
 	}

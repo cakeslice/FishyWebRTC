@@ -42,7 +42,7 @@ namespace cakeslice.SimpleWebRTC
 		public Action<Connection> onDispose;
 		volatile bool hasDisposed;
 
-		public Connection(ConnectionId connId, int maxMessageSize, string clientAddress, Action<Connection> onDispose)
+		public Connection(List<Common.ICEServer> _iceServers, ConnectionId connId, int maxMessageSize, string clientAddress, Action<Connection> onDispose)
 		{
 			this.connId = connId;
 
@@ -51,6 +51,35 @@ namespace cakeslice.SimpleWebRTC
 			this.clientAddress = clientAddress;
 
 			client = new RTCPeerConnection();
+			
+			List<RTCIceServer> iceServers = new List<RTCIceServer>();
+			foreach(Common.ICEServer s in _iceServers)
+			{
+				if(s.username == null || s.username == "")
+					iceServers.Add(new RTCIceServer
+						{
+							urls = new[] {s.url}
+						});
+				else
+					iceServers.Add(new RTCIceServer
+						{
+							urls = new[] {s.url},
+							username = s.username,
+							credential = s.credential,
+							credentialType = RTCIceCredentialType.Password
+						});
+			}
+
+			var configuration = new RTCConfiguration
+			{
+				iceServers = iceServers.ToArray()
+			};
+		   var error = client.SetConfiguration(ref configuration);
+         if(error != RTCErrorType.None)
+			{
+				Log.Error("RTCError in client.SetConfiguration");
+			}
+
 			client.OnConnectionStateChange += state => {
 				if(state == RTCPeerConnectionState.Connected)
 				{
@@ -77,6 +106,8 @@ namespace cakeslice.SimpleWebRTC
 					reliableSendThread.Start();
 				}
 			};
+
+			//
 
 			client.OnIceConnectionChange += state =>
 			{
@@ -208,7 +239,7 @@ namespace cakeslice.SimpleWebRTC
 			catch (InvalidDataException e)
 			{
 				dispose = true;
-				Log.Error($"Invalid data from {conn}: {e.Message}");
+				Log.Warn($"Invalid data from {conn}: {e.Message}");
 				queue.Enqueue(new Message(conn.connId, e));
 			}
 			catch (Exception e)

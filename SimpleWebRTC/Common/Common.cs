@@ -5,6 +5,14 @@ namespace cakeslice.SimpleWebRTC
 {
 	public static class Common
 	{
+		[System.Serializable]
+		public class ICEServer
+		{
+			public string url;
+			public string username;
+			public string credential;
+		}
+
 		[Serializable]
 		public enum DeliveryMethod : byte
 		{

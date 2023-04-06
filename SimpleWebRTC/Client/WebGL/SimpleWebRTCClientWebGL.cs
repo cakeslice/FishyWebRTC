@@ -28,10 +28,30 @@ namespace cakeslice.SimpleWebRTC
 
 		public bool CheckJsConnected() => SimpleWebRTCJSLib.IsConnectedRTC(index);
 
-		public override void Connect(Uri serverAddress, string stunTurnAddress)
+		public override void Connect(List<Common.ICEServer> iceServers, Uri serverAddress)
 		{
+			string iceServersString = "";
+			for (int m = 0; m < iceServers.Count; m++)
+			{
+				Common.ICEServer s = iceServers[m];
+
+				if (s.url.Contains(";;") || s.url
+				.Contains("__") || s.username.Contains(";;") || s.username
+				.Contains("__") || s.credential.Contains(";;") || s.credential
+				.Contains("__"))
+				{
+					throw new Exception("ICEServer params cannot have the strings ';;' or '__'");
+				}
+
+				iceServersString += s.url;
+				if (s.username != "" && s.username != null)
+					iceServersString += "__" + s.username + "__" + s.credential;
+				if (m != iceServers.Count - 1)
+					iceServersString += ";;";
+			}
+
 #if UNITY_WEBGL && !UNITY_EDITOR
-			index = SimpleWebRTCJSLib.ConnectRTC(serverAddress.ToString(), stunTurnAddress, OpenCallback, CloseCallBack, MessageCallback, ErrorCallback);
+			index = SimpleWebRTCJSLib.ConnectRTC(serverAddress.ToString(), iceServersString, OpenCallback, CloseCallBack, MessageCallback, ErrorCallback);
 #endif
 			instances.Add(index, this);
 			state = ClientState.Connecting;

@@ -26,7 +26,7 @@ function IsConnectedRTC(index) {
 
 function ConnectRTC(
    addressPtr,
-   stunTurnAddressPtr,
+   iceServersPtr,
    openCallbackPtr,
    closeCallBackPtr,
    messageCallbackPtr,
@@ -49,19 +49,35 @@ function ConnectRTC(
    let answerAddress = UTF8ToString(addressPtr);
    answerAddress += "answer/";
 
+   let candidates = [];
+
    // Create the connection
-   const stunTurnAddress = UTF8ToString(stunTurnAddressPtr);
+   const iceServers = UTF8ToString(iceServersPtr)
+      .split(";;")
+      .map((s) => {
+         const props = s.split("__");
+
+         if (props.length > 1) {
+            return {
+               urls: props[0],
+               username: props[1],
+               credential: props[2],
+            };
+         } else {
+            return {
+               urls: props[0],
+            };
+         }
+      });
+	console.log("Using the following ICE servers: " + JSON.stringify(iceServers, null, 3))
    peerConnection = new RTCPeerConnection({
-      iceServers: [
-         {
-            urls: stunTurnAddress,
-         },
-      ],
+      iceServers: iceServers
    });
+
    peerConnection.addEventListener("connectionstatechange", (event) => {
       if (peerConnection.connectionState === "connected") {
          console.log("Connected to " + addressPtr);
-         Runtime.dynCall("vi", openCallbackPtr, [index]);
+         // We don't trigger the connected callback here because we still need the data channels to be ready
       } else if (peerConnection.connectionState === "closed") {
          console.log("Disconnected from " + addressPtr);
          Runtime.dynCall("vi", closeCallBackPtr, [index]);
@@ -70,6 +86,34 @@ function ConnectRTC(
          Runtime.dynCall("vi", errorCallbackPtr, [index]);
       }
    });
+
+   peerConnection.addEventListener("icecandidate", (e) => {
+      candidates.push(e.candidate);
+      console.log("icecandidate " + JSON.stringify(e.candidate));
+   });
+   peerConnection.addEventListener("negotiationneeded", (e) => {
+      console.log("negotiationneeded! create offer...");
+   });
+   peerConnection.addEventListener("icegatheringstatechange", (e) => {
+      console.log(
+         "icegatheringstatechange " + peerConnection.iceGatheringState
+      );
+   });
+   peerConnection.addEventListener("iceconnectionstatechange", (e) => {
+      console.log(
+         "iceconnectionstatechange " + peerConnection.iceConnectionState
+      );
+   });
+   peerConnection.addEventListener("icecandidateerror", (e) => {
+      console.log(
+         "icecandidateerror " + e.url + " " + e.errorCode + " " + e.errorText
+      );
+   });
+   peerConnection.addEventListener("signalingstatechange", (e) => {
+      console.log("signalingstatechange " + peerConnection.signalingState);
+   });
+
+   //
 
    const index = SimpleWebRTC.AddNextPeer(peerConnection);
 
@@ -105,53 +149,76 @@ function ConnectRTC(
                      peerConnection
                         .setLocalDescription(answer)
                         .then(function () {
-                           const answerTimeout = setTimeout(() => {
-                              Runtime.dynCall("vi", errorCallbackPtr, [index]);
-                           }, fetchTimeout);
-                           fetch(answerAddress, {
-                              method: "POST",
-                              headers: {
-                                 "Content-Type": "application/json",
-                              },
-                              body: JSON.stringify({
-                                 connId: connId,
-                                 sdp: answer.sdp,
-                              }),
-                           })
-                              .then(function (response) {
-                                 clearTimeout(answerTimeout);
-                                 return response.json();
-                              })
-                              .then((obj) => {
-                                 if (obj.candidates.length === 0) {
-                                    Runtime.dynCall("vi", errorCallbackPtr, [
-                                       index,
-                                    ]);
-                                    return console.error(
-                                       "No ICE candidates found in the server"
-                                    );
-                                 }
+                           setTimeout(() => {
+                              const answerTimeout = setTimeout(() => {
+                                 Runtime.dynCall("vi", errorCallbackPtr, [
+                                    index,
+                                 ]);
+                              }, fetchTimeout);
 
-                                 obj.candidates.forEach((c) => {
-                                    peerConnection.addIceCandidate(c);
-                                 });
+                              fetch(answerAddress, {
+                                 method: "POST",
+                                 headers: {
+                                    "Content-Type": "application/json",
+                                 },
+                                 body: JSON.stringify({
+                                    connId: connId,
+                                    sdp: answer.sdp,
+                                    candidates: candidates.map(
+                                       (c) => c.candidate
+                                    ),
+                                 }),
                               })
-                              .catch((e) => {
-                                 fetchError(e);
-                              });
+                                 .then(function (response) {
+                                    clearTimeout(answerTimeout);
+                                    return response.json();
+                                 })
+                                 .then((obj) => {
+                                    if (obj.candidates.length === 0) {
+                                       Runtime.dynCall("vi", errorCallbackPtr, [
+                                          index,
+                                       ]);
+                                       return console.error(
+                                          "No ICE candidates found in the server"
+                                       );
+                                    }
+
+                                    obj.candidates.forEach((c) => {
+                                       peerConnection.addIceCandidate({
+                                          candidate: c,
+                                          sdpMid: "0",
+                                          sdpMLineIndex: 0,
+                                       });
+                                    });
+                                    // End of candidates
+                                    peerConnection.addIceCandidate();
+                                    console.log("Got remote candidates");
+                                 })
+                                 .catch((e) => {
+                                    fetchError(e);
+                                 });
+                           }, 1000); // Wait 1 second to gather candidates
                         });
                   });
                });
 
             // Setup data channel
 
+            let channels = [];
             peerConnection.ondatachannel = function (event) {
                const dataChannel = event.channel;
 
                if (dataChannel.label === "Reliable") {
                   peerConnection.reliableChannel = dataChannel;
+                  channels.push(dataChannel.label);
                } else if (dataChannel.label === "Unreliable") {
                   peerConnection.unreliableChannel = dataChannel;
+                  channels.push(dataChannel.label);
+               }
+
+               if (channels.length == 2) {
+                  // All channels open and ready, trigger connected callback
+                  Runtime.dynCall("vi", openCallbackPtr, [index]);
                }
 
                dataChannel.addEventListener("error", (ev) => {
@@ -214,7 +281,7 @@ function SendRTC(index, arrayPtr, offset, length, deliveryMethod) {
    if (peer) {
       const start = arrayPtr + offset;
       const end = start + length;
-      const data = HEAPU8.buffer.slice(start, end); 
+      const data = HEAPU8.buffer.slice(start, end);
 
       if (deliveryMethod === 4) peer.unreliableChannel.send(data);
       else peer.reliableChannel.send(data);

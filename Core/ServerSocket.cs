@@ -25,6 +25,11 @@ namespace FishNet.Transporting.FishyWebRTC.Server
 
 		#region Private.
 		#region Configuration.
+		private List<Common.ICEServer> _iceServers;
+		/// <summary>
+		/// Allowed domain origin.
+		/// </summary>
+		private string _origin;
 		/// <summary>
 		/// Port used by server.
 		/// </summary>
@@ -85,7 +90,6 @@ namespace FishNet.Transporting.FishyWebRTC.Server
 		/// Threaded operation to process server actions.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		[Obsolete]
 		private void Socket()
 		{
 			_server = new SimpleWebRTCServer(5000, _mtu);
@@ -96,7 +100,7 @@ namespace FishNet.Transporting.FishyWebRTC.Server
 			_server.onError += _server_onError;
 
 			base.SetConnectionState(LocalConnectionState.Starting, true);
-			_server.Start(_port);
+			_server.Start(_iceServers, _port, _origin);
 			base.SetConnectionState(LocalConnectionState.Started, true);
 		}
 
@@ -161,8 +165,7 @@ namespace FishNet.Transporting.FishyWebRTC.Server
 		/// <summary>
 		/// Starts the server.
 		/// </summary>
-		[Obsolete]
-		internal bool StartConnection(ushort port, int maximumClients)
+		internal bool StartConnection(List<Common.ICEServer> iceServers, ushort port, int maximumClients, string origin)
 		{
 			if (base.GetConnectionState() != LocalConnectionState.Stopped)
 				return false;
@@ -171,7 +174,9 @@ namespace FishNet.Transporting.FishyWebRTC.Server
 
 			//Assign properties.
 			_port = port;
+			_origin = origin;
 			_maximumClients = maximumClients;
+			_iceServers = iceServers;
 			ResetQueues();
 			Socket();
 			return true;

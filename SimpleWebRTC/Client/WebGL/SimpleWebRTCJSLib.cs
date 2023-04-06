@@ -14,7 +14,7 @@ namespace cakeslice.SimpleWebRTC
 #pragma warning disable CA2101 // Specify marshaling for P/Invoke string arguments
 		[DllImport("__Internal")]
 #pragma warning restore CA2101 // Specify marshaling for P/Invoke string arguments
-		internal static extern int ConnectRTC(string address, string stunAddress, Action<int> openCallback, Action<int> closeCallBack, Action<int, IntPtr, int> messageCallback, Action<int> errorCallback);
+		internal static extern int ConnectRTC(string address, string iceServers, Action<int> openCallback, Action<int> closeCallBack, Action<int, IntPtr, int> messageCallback, Action<int> errorCallback);
 
 		[DllImport("__Internal")]
 		internal static extern void DisconnectRTC(int index);
@@ -24,7 +24,7 @@ namespace cakeslice.SimpleWebRTC
 #else
 		internal static bool IsConnectedRTC(int index) => throw new NotSupportedException();
 
-		internal static int ConnectRTC(string address, Action<int> openCallback, Action<int> closeCallBack, Action<int, IntPtr, int> messageCallback, Action<int> errorCallback) => throw new NotSupportedException();
+		internal static int ConnectRTC(string address, string iceServers,  Action<int> openCallback, Action<int> closeCallBack, Action<int, IntPtr, int> messageCallback, Action<int> errorCallback) => throw new NotSupportedException();
 
 		internal static void DisconnectRTC(int index) => throw new NotSupportedException();
 

@@ -4,12 +4,25 @@ using FishNet.Managing.Transporting;
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using System.Collections.Generic;
+using cakeslice.SimpleWebRTC;
 
 namespace FishNet.Transporting.FishyWebRTC
 {
 	[DisallowMultipleComponent]
 	public class FishyWebRTC : Transport
 	{
+		[SerializeField]
+		/// <summary>
+		/// ICE servers (STUN or TURN) to use.
+		/// </summary>
+		[Tooltip("ICE servers (STUN or TURN) to use. Use Google's server only for testing purposes!")]
+		private List<Common.ICEServer> iceServers = new List<Common.ICEServer>(){
+			new Common.ICEServer(){
+				url = "stun:stun2.l.google.com:19302"
+			}
+		};
+
 		const string serverOnlyException = "Hosting as a client is not implemented!";
 
 		#region Serialized.
@@ -24,6 +37,12 @@ namespace FishNet.Transporting.FishyWebRTC
 		private int _mtu = 1023;
 
 		[Header("Server")]
+		/// <summary>
+		/// Allowed domain origin.
+		/// </summary>
+		[Tooltip("Allowed domain origin.")]
+		[SerializeField]
+		private string _origin = "*";
 		/// <summary>
 		/// Port to use.
 		/// </summary>
@@ -42,21 +61,21 @@ namespace FishNet.Transporting.FishyWebRTC
 		/// <summary>
 		/// Address to connect.
 		/// </summary>
-		[Tooltip("Address to connect.")]
+		[Tooltip("Use HTTPS for signaling.")]
+		[SerializeField]
+		private bool _HTTPS = true;
+		/// <summary>
+		/// Address to connect.
+		/// </summary>
+		[Tooltip("Signaling address to connect.")]
 		[SerializeField]
 		private string _clientAddress = "127.0.0.1";
 		/// <summary>
 		/// Port to connect.
 		/// </summary>
-		[Tooltip("If you want to connect to the server without a port.")]
+		[Tooltip("If you want to connect to the signaling server without a port.")]
 		[SerializeField]
 		private bool _noClientPort = true;
-		/// <summary>
-		/// STUN or TURN address to connect
-		/// </summary>
-		[Tooltip("STUN or TURN address to connect. Use Google's server only for testing purposes!")]
-		[SerializeField]
-		private string _stunTurnAddress = "stun:stun2.l.google.com:19302";
 		#endregion
 
 		#region Private.
@@ -354,7 +373,7 @@ namespace FishNet.Transporting.FishyWebRTC
 				return StartServer();
 			else
 #endif
-			return StartClient(_clientAddress, _stunTurnAddress);
+			return StartClient(_clientAddress);
 		}
 
 		/// <summary>
@@ -403,7 +422,7 @@ namespace FishNet.Transporting.FishyWebRTC
 		{
 #if !UNITY_WEBGL
 			_server.Initialize(this, _mtu);
-			return _server.StartConnection(_port, _maximumClients);
+			return _server.StartConnection(iceServers, _port, _maximumClients, _origin);
 #else
 			throw new Exception(serverOnlyException);
 #endif
@@ -425,10 +444,10 @@ namespace FishNet.Transporting.FishyWebRTC
 		/// Starts the client.
 		/// </summary>
 		/// <param name="address"></param>
-		private bool StartClient(string address, string stunTurnAddress)
+		private bool StartClient(string address)
 		{
 			_client.Initialize(this, _mtu);
-			return _client.StartConnection(address, _port, stunTurnAddress, _noClientPort);
+			return _client.StartConnection(iceServers, address, _HTTPS, _port, _noClientPort);
 		}
 
 		/// <summary>

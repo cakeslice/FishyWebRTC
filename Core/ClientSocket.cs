@@ -14,6 +14,11 @@ namespace FishNet.Transporting.FishyWebRTC.Client
 
 		#region Private.
 		#region Configuration.
+		private List<Common.ICEServer> _iceServers;
+		/// <summary>
+		/// Address to bind server to.
+		/// </summary>
+		private bool _https = true;
 		/// <summary>
 		/// Address to bind server to.
 		/// </summary>
@@ -67,13 +72,13 @@ namespace FishNet.Transporting.FishyWebRTC.Client
 
 			UriBuilder builder = new UriBuilder
 			{
-				Scheme = "http",
+				Scheme = _https ? "https" : "http",
 				Host = _address,
 				Port = noPort ? -1 : _port
 			};
 			base.SetConnectionState(LocalConnectionState.Starting, false);
 
-			_client.Connect(builder.Uri, _stunTurnAddress);
+			_client.Connect(_iceServers, builder.Uri);
 		}
 
 		private void _client_onError(Exception obj)
@@ -112,7 +117,7 @@ namespace FishNet.Transporting.FishyWebRTC.Client
 		/// <param name="port"></param>
 		/// <param name="channelsCount"></param>
 		/// <param name="pollTime"></param>
-		internal bool StartConnection(string address, ushort port, string stunTurnAddress, bool noPort)
+		internal bool StartConnection(List<Common.ICEServer> iceServers, string address, bool https, ushort port, bool noPort)
 		{
 			if (base.GetConnectionState() != LocalConnectionState.Stopped)
 				return false;
@@ -121,7 +126,8 @@ namespace FishNet.Transporting.FishyWebRTC.Client
 			//Assign properties.
 			_port = port;
 			_address = address;
-			_stunTurnAddress = stunTurnAddress;
+			_https = https;
+			_iceServers = iceServers;
 
 			ResetQueues();
 			Socket(noPort);

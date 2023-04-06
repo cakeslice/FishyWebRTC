@@ -72,23 +72,26 @@ namespace cakeslice.SimpleWebRTC
 					}
 					sendPending.Reset();
 
-					while (sendQueue.TryDequeue(out ArrayBuffer msg))
+					if(stream.ReadyState == RTCDataChannelState.Open)
 					{
-						// check if connected before sending message
-						if (client.ConnectionState != RTCPeerConnectionState.Connected) { 
-							Log.Info($"SendLoop {conn} not connected"); return; 
+						while (sendQueue.TryDequeue(out ArrayBuffer msg))
+						{
+							// check if connected before sending message
+							if (client.ConnectionState != RTCPeerConnectionState.Connected) { 
+								Log.Info($"SendLoop {conn} not connected"); return; 
+							}
+
+							int length = SendMessage(writeBuffer, 0, msg);
+
+							GCHandle pinned = GCHandle.Alloc(writeBuffer, GCHandleType.Pinned);
+							IntPtr pointer = pinned.AddrOfPinnedObject();
+
+							stream.Send(pointer, length);
+
+							pinned.Free();
+
+							msg.Release();
 						}
-
-						int length = SendMessage(writeBuffer, 0, msg);
-
-						GCHandle pinned = GCHandle.Alloc(writeBuffer, GCHandleType.Pinned);
-						IntPtr pointer = pinned.AddrOfPinnedObject();
-
-						stream.Send(pointer, length);
-
-						pinned.Free();
-
-						msg.Release();
 					}
 				}
 

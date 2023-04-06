@@ -8,7 +8,6 @@ using System.Net.Sockets;
 using System.Threading;
 using Unity.WebRTC;
 using System.Net;
-using Newtonsoft.Json.Linq;
 using System.Text;
 using System.IO;
 using UnityEngine;
@@ -23,6 +22,7 @@ namespace cakeslice.SimpleWebRTC
 
 		public HttpListener listener;
 		Thread acceptThread;
+		string allowedOrigin;
 		bool serverStopped;
 		readonly BufferPool bufferPool;
 		readonly ConcurrentDictionary<int, Connection> connections = new ConcurrentDictionary<int, Connection>();
@@ -55,7 +55,7 @@ namespace cakeslice.SimpleWebRTC
 		public WebRTCServer(int maxMessageSize, BufferPool bufferPool)
 		{
 			// TODO: SSL Support (sslConfig)
-			// TODO: Support sent/receive timeout config (tcpConfig)
+			// TODO: Support send/receive timeout config (tcpConfig)
 
 			//Make a small queue to start.
 			GrowIdCache(1000);
@@ -69,21 +69,26 @@ namespace cakeslice.SimpleWebRTC
 		{
 			public ConnectionId connId;
 			public string sdp;
+			public string[] candidates;
 
-			public OfferResponse(ConnectionId id, string offer)
+			public OfferResponse(ConnectionId id, string offer, string[] candidates)
 			{
-				connId = id;
-				sdp = offer;
+				this.connId = id;
+				this.sdp = offer;
+				this.candidates = candidates;
 			}
 		}
 
-		[Obsolete]
-		public void Listen(int port)
+		List<Common.ICEServer> iceServers;
+		public void Listen(List<Common.ICEServer> iceServers, int port, string origin)
 		{
+			this.iceServers = iceServers;
+			allowedOrigin = origin;
+
 			WebRTC.Initialize();
 
 			listener = new HttpListener(); 
-			listener.Prefixes.Add("http://" + "*:" + port + "/"); // TODO: Make this configurable
+			listener.Prefixes.Add("http://" + "*:" + port + "/");
 			listener.Start();
 			Log.Info($"Server has started on port {port}");
 
@@ -106,7 +111,7 @@ namespace cakeslice.SimpleWebRTC
 
 						if (req.Url.AbsolutePath.Contains("/offer/"))
 						{
-							resp.Headers["Access-Control-Allow-Origin"] = "*"; // TODO: Make this configurable
+							resp.Headers["Access-Control-Allow-Origin"] = allowedOrigin;
 							resp.Headers["Access-Control-Allow-Methods"] = "GET";
 							resp.Headers["Access-Control-Allow-Headers"] = "Content-Type";
 							resp.Headers["Content-Type"] = "application/json";
@@ -117,7 +122,7 @@ namespace cakeslice.SimpleWebRTC
 								continue;
 							}
 							
-							Connection conn = new Connection(GetNextId(), maxMessageSize, req.RemoteEndPoint.ToString(), AfterConnectionDisposed);
+							Connection conn = new Connection(iceServers, GetNextId(), maxMessageSize, req.RemoteEndPoint.ToString(), AfterConnectionDisposed);
 							Connection.Config receiveConfig = new Connection.Config(
 									conn,
 									maxMessageSize,
@@ -134,7 +139,7 @@ namespace cakeslice.SimpleWebRTC
 						}
 						else if (req.Url.AbsolutePath.Contains("/answer/"))
 						{
-							resp.Headers["Access-Control-Allow-Origin"] = "*";  // TODO: Make this configurable
+							resp.Headers["Access-Control-Allow-Origin"] = allowedOrigin;
 							resp.Headers["Access-Control-Allow-Methods"] = "POST";
 							resp.Headers["Access-Control-Allow-Headers"] = "Content-Type";
 							resp.Headers["Content-Type"] = "application/json";
@@ -218,7 +223,7 @@ namespace cakeslice.SimpleWebRTC
 				connections.TryAdd(conn.connId, conn);
 
 				string sdp = offerOp.Desc.sdp;
-				OfferResponse respObject = new OfferResponse(conn.connId, sdp);
+				OfferResponse respObject = new OfferResponse(conn.connId, sdp, null);
 				string jsonResponse = JsonUtility.ToJson(respObject);
 				byte[] respBytes = Encoding.UTF8.GetBytes(jsonResponse);
 
@@ -278,35 +283,34 @@ namespace cakeslice.SimpleWebRTC
 					{
 
 					}
+						
+					foreach(string c in answer.candidates)
+					{
+						var i = new RTCIceCandidateInit();
+						i.candidate = c;
+						i.sdpMid = "0";
+						i.sdpMLineIndex = 0;
+						conn.client.AddIceCandidate(new RTCIceCandidate(i));
+					}
+
+					// Wait one second to gather candidates
+					Thread.Sleep(1000);
 
 					if(conn.iceCandidates.Count == 0 )
 						Log.Error("No ICE candidates available to send");
 
-					JArray array = new JArray();
-					foreach(RTCIceCandidate candidate in conn.iceCandidates)
+					string output = "{\n" + "\"candidates\": [";
+
+					for(int i = 0; i < conn.iceCandidates.Count; i++)
 					{
-						JObject o = JObject.FromObject(new
-						{
-							address = candidate.Address,
-							candidate = candidate.Candidate,
-							component =  candidate.Component,
-							foundation = candidate.Foundation,
-							port = candidate.Port,
-							priority = candidate.Priority,
-							protocol =  candidate.Protocol,
-							sdpMid = candidate.SdpMid,
-							sdpMLineIndex = candidate.SdpMLineIndex,
-							type =  candidate.Type,
-							usernameFragment = candidate.UserNameFragment
-						});
-						array.Add(o);
+						string c = conn.iceCandidates[i].Candidate;
+
+						output += "\"" + c + (i != conn.iceCandidates.Count - 1 ? "\"," : "\"");
 					}
 
-					JObject jObject = new JObject();
-					jObject["candidates"] = array;
-					string jObjectString = jObject.ToString();
+					output += "]\n}";
 
-					resp.Close(Encoding.UTF8.GetBytes(jObjectString), false);
+					resp.Close(Encoding.UTF8.GetBytes(output), false);
 
 					// check if Stop has been called since accepting this client
 					if (serverStopped)

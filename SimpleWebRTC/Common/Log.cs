@@ -83,7 +83,7 @@ namespace cakeslice.SimpleWebRTC
 			logger.Log(LogType.Log, $"INFO_EXCEPTION: <color=blue>{e.GetType().Name}</color> Message: {e.Message}\n{e.StackTrace}\n\n");
 		}
 
-		[Conditional(SIMPLEWEBRTC_LOG_ENABLED), Conditional(DEBUG)]
+		//[Conditional(SIMPLEWEBRTC_LOG_ENABLED), Conditional(DEBUG)]
 		public static void Warn(string msg, bool showColor = true)
 		{
 			if (level < Levels.warn)
@@ -95,7 +95,7 @@ namespace cakeslice.SimpleWebRTC
 				logger.Log(LogType.Warning, $"WARN: {msg}");
 		}
 
-		[Conditional(SIMPLEWEBRTC_LOG_ENABLED), Conditional(DEBUG)]
+		//[Conditional(SIMPLEWEBRTC_LOG_ENABLED), Conditional(DEBUG)]
 		public static void Error(string msg, bool showColor = true)
 		{
 			if (level < Levels.error)
