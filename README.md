@@ -6,8 +6,8 @@ Based on [Bayou](https://github.com/FirstGearGames/Bayou) and [SimpleWebTranspor
 
 Limitations:
 - Only WebGL is supported for clients
-- There's no P2P support and clients cannot be hosts
   - You can use UDP on other platforms with a Multipass transport
+- There's no P2P support and clients cannot be hosts
 - The server can be built for most platforms but only Linux Dedicated Server build has been tested
 - Clients cannot be tested in Unity Editor, it only works in WebGL builds
 - HTTPS support for the initial connection (signaling) to the server is not implemented
