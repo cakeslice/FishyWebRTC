@@ -1,15 +1,10 @@
 using System;
 using UnityEngine;
-using Conditional = System.Diagnostics.ConditionalAttribute;
 
 namespace cakeslice.SimpleWebRTC
 {
 	public static class Log
 	{
-		// used for Conditional
-		const string SIMPLEWEBRTC_LOG_ENABLED = nameof(SIMPLEWEBRTC_LOG_ENABLED);
-		const string DEBUG = nameof(DEBUG);
-
 		public enum Levels
 		{
 			none = 0,
@@ -19,98 +14,69 @@ namespace cakeslice.SimpleWebRTC
 			verbose = 4,
 		}
 
-		public static ILogger logger = Debug.unityLogger;
-		public static Levels level = Levels.info;
+		public static Levels level = Levels.warn;
 
 		public static string BufferToString(byte[] buffer, int offset = 0, int? length = null)
 		{
 			return BitConverter.ToString(buffer, offset, length ?? buffer.Length);
 		}
 
-		[Conditional(SIMPLEWEBRTC_LOG_ENABLED)]
 		public static void DumpBuffer(string label, byte[] buffer, int offset, int length)
 		{
 			if (level < Levels.verbose)
 				return;
 
-			logger.Log(LogType.Log, $"VERBOSE: <color=blue>{label}: {BufferToString(buffer, offset, length)}</color>");
+			Debug.Log($"SimpleWebRTC Verbose: {label}: {BufferToString(buffer, offset, length)}");
 		}
 
-		[Conditional(SIMPLEWEBRTC_LOG_ENABLED)]
 		public static void DumpBuffer(string label, ArrayBuffer arrayBuffer)
 		{
 			if (level < Levels.verbose)
 				return;
 
-			logger.Log(LogType.Log, $"VERBOSE: <color=blue>{label}: {BufferToString(arrayBuffer.array, 0, arrayBuffer.count)}</color>");
+			Debug.Log($"SimpleWebRTC Verbose: {label}: {BufferToString(arrayBuffer.array, 0, arrayBuffer.count)}");
 		}
 
-		[Conditional(SIMPLEWEBRTC_LOG_ENABLED)]
-		public static void Verbose(string msg, bool showColor = true)
+		public static void Verbose(string msg)
 		{
 			if (level < Levels.verbose)
 				return;
 
-			if (showColor)
-				logger.Log(LogType.Log, $"VERBOSE: <color=blue>{msg}</color>");
-			else
-				logger.Log(LogType.Log, $"VERBOSE: {msg}");
+			Debug.Log($"SimpleWebRTC Verbose: {msg}");
 		}
 
-		[Conditional(SIMPLEWEBRTC_LOG_ENABLED)]
-		public static void Info(string msg, bool showColor = true)
+		public static void Info(string msg)
 		{
-			if (level < Levels.info)
-				return;
-
-			if (showColor)
-				logger.Log(LogType.Log, $"INFO: <color=blue>{msg}</color>");
-			else
-				logger.Log(LogType.Log, $"INFO: {msg}");
+			Debug.Log($"SimpleWebRTC: {msg}");
 		}
 
-		/// <summary>
-		/// An expected Exception was caught, useful for debugging but not important
-		/// </summary>
-		/// <param name="msg"></param>
-		/// <param name="showColor"></param>
-		[Conditional(SIMPLEWEBRTC_LOG_ENABLED)]
 		public static void InfoException(Exception e)
 		{
 			if (level < Levels.info)
 				return;
 
-			logger.Log(LogType.Log, $"INFO_EXCEPTION: <color=blue>{e.GetType().Name}</color> Message: {e.Message}\n{e.StackTrace}\n\n");
+			Debug.Log($"SimpleWebRTC Exception: {e.GetType().Name} Message: {e.Message}\n{e.StackTrace}\n\n");
 		}
 
-		//[Conditional(SIMPLEWEBRTC_LOG_ENABLED), Conditional(DEBUG)]
-		public static void Warn(string msg, bool showColor = true)
+		public static void Warn(string msg)
 		{
 			if (level < Levels.warn)
 				return;
 
-			if (showColor)
-				logger.Log(LogType.Warning, $"WARN: <color=orange>{msg}</color>");
-			else
-				logger.Log(LogType.Warning, $"WARN: {msg}");
+			Debug.LogWarning($"SimpleWebRTC: {msg}");
 		}
 
-		//[Conditional(SIMPLEWEBRTC_LOG_ENABLED), Conditional(DEBUG)]
-		public static void Error(string msg, bool showColor = true)
+		public static void Error(string msg)
 		{
 			if (level < Levels.error)
 				return;
 
-			if (showColor)
-				logger.Log(LogType.Error, $"ERROR: <color=red>{msg}</color>");
-			else
-				logger.Log(LogType.Error, $"ERROR: {msg}");
+			Debug.LogError($"SimpleWebRTC: {msg}");
 		}
 
 		public static void Exception(Exception e)
 		{
-			// always log Exceptions
-			logger.Log(LogType.Error, $"EXCEPTION: <color=red>{e.GetType().Name}</color> Message: {e.Message}\n{e.StackTrace}\n\n");
+			Debug.LogError($"SimpleWebRTC Exception: {e.GetType().Name} Message: {e.Message}\n{e.StackTrace}\n\n");
 		}
 	}
 }

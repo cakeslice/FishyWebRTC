@@ -84,7 +84,7 @@ namespace cakeslice.SimpleWebRTC
 		{
 			this.iceServers = iceServers;
 			allowedOrigin = origin;
-
+			
 			WebRTC.Initialize();
 
 			listener = new HttpListener(); 

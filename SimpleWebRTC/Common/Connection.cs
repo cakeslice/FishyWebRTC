@@ -233,7 +233,7 @@ namespace cakeslice.SimpleWebRTC
 			{	
 				dispose = true;
 				// this could happen if client disconnects
-				Log.Warn($"HandleReceiveMessage IOException\n{e.Message}", false);
+				Log.Warn($"HandleReceiveMessage IOException\n{e.Message}");
 				queue.Enqueue(new Message(conn.connId, e));
 			}
 			catch (InvalidDataException e)
