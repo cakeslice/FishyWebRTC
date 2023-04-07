@@ -47,6 +47,9 @@ namespace cakeslice.SimpleWebRTC
 
 		public static void Info(string msg)
 		{
+			if (level < Levels.info)
+				return;
+
 			Debug.Log($"SimpleWebRTC: {msg}");
 		}
 
@@ -76,6 +79,9 @@ namespace cakeslice.SimpleWebRTC
 
 		public static void Exception(Exception e)
 		{
+			if (level < Levels.error)
+				return;
+
 			Debug.LogError($"SimpleWebRTC Exception: {e.GetType().Name} Message: {e.Message}\n{e.StackTrace}\n\n");
 		}
 	}
