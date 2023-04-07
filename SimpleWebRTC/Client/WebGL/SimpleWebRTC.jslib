@@ -49,7 +49,7 @@ function ConnectRTC(
    let answerAddress = UTF8ToString(addressPtr);
    answerAddress += "answer/";
 
-   let candidates = [];
+	window.candidates = []
 
    // Create the connection
    const iceServers = UTF8ToString(iceServersPtr)
@@ -88,7 +88,7 @@ function ConnectRTC(
    });
 
    peerConnection.addEventListener("icecandidate", (e) => {
-      candidates.push(e.candidate);
+      window.candidates.push(e.candidate);
       console.log("icecandidate " + JSON.stringify(e.candidate));
    });
    peerConnection.addEventListener("negotiationneeded", (e) => {
@@ -164,7 +164,7 @@ function ConnectRTC(
                                  body: JSON.stringify({
                                     connId: connId,
                                     sdp: answer.sdp,
-                                    candidates: candidates.map(
+                                    candidates: window.candidates.map(
                                        (c) => c.candidate
                                     ),
                                  }),
