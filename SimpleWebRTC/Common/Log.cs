@@ -20,7 +20,7 @@ namespace cakeslice.SimpleWebRTC
 		}
 
 		public static ILogger logger = Debug.unityLogger;
-		public static Levels level = Levels.none;
+		public static Levels level = Levels.info;
 
 		public static string BufferToString(byte[] buffer, int offset = 0, int? length = null)
 		{
