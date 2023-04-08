@@ -17,7 +17,7 @@ namespace FishNet.Transporting.FishyWebRTC
 		/// ICE servers (STUN or TURN) to use.
 		/// </summary>
 		[Tooltip("ICE servers (STUN or TURN) to use. Use Google's server only for testing purposes!")]
-		private List<Common.ICEServer> iceServers = new List<Common.ICEServer>(){
+		public List<Common.ICEServer> iceServers = new List<Common.ICEServer>(){
 			new Common.ICEServer(){
 				url = "stun:stun2.l.google.com:19302"
 			}
