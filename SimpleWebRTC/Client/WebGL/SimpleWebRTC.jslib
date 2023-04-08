@@ -164,7 +164,7 @@ function ConnectRTC(
                                  body: JSON.stringify({
                                     connId: connId,
                                     sdp: answer.sdp,
-                                    candidates: window.candidates.map(
+                                    candidates: window.candidates.filter(c => c).map(
                                        (c) => c.candidate
                                     ),
                                  }),

@@ -120,10 +120,9 @@ namespace cakeslice.SimpleWebRTC
 		static int SendMessage(byte[] buffer, int offset,ArrayBuffer msg)
 		{
 			msg.CopyTo(buffer, offset);
-         offset += msg.count;
-
 			Log.DumpBuffer("Send", buffer, offset, buffer.Length);
-
+			
+			offset += msg.count;
 			return offset;
 		}
 	}
