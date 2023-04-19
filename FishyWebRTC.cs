@@ -79,7 +79,7 @@ namespace FishNet.Transporting.FishyWebRTC
 		#endregion
 
 		#region Private.
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL || UNITY_EDITOR
 		/// <summary>
 		/// Server socket and handler.
 		/// </summary>
@@ -117,7 +117,7 @@ namespace FishNet.Transporting.FishyWebRTC
 		/// <returns></returns>
 		public override string GetConnectionAddress(int connectionId)
 		{
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL || UNITY_EDITOR
 			return _server.GetConnectionAddress(connectionId);
 #else
 			throw new Exception(serverOnlyException);
@@ -142,12 +142,12 @@ namespace FishNet.Transporting.FishyWebRTC
 		/// <param name="server">True if getting ConnectionState for the server.</param>
 		public override LocalConnectionState GetConnectionState(bool server)
 		{
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL || UNITY_EDITOR
 			if (server)
 				return _server.GetConnectionState();
 			else
 #endif
-			return _client.GetConnectionState();
+				return _client.GetConnectionState();
 		}
 		/// <summary>
 		/// Gets the current ConnectionState of a remote client on the server.
@@ -155,7 +155,7 @@ namespace FishNet.Transporting.FishyWebRTC
 		/// <param name="connectionId">ConnectionId to get ConnectionState for.</param>
 		public override RemoteConnectionState GetConnectionState(int connectionId)
 		{
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL || UNITY_EDITOR
 			return _server.GetConnectionState(connectionId);
 #else
 			throw new Exception(serverOnlyException);
@@ -194,12 +194,12 @@ namespace FishNet.Transporting.FishyWebRTC
 		/// <param name="server">True to process data received on the server.</param>
 		public override void IterateIncoming(bool server)
 		{
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL || UNITY_EDITOR
 			if (server)
 				_server.IterateIncoming();
 			else
 #endif
-			_client.IterateIncoming();
+				_client.IterateIncoming();
 		}
 
 		/// <summary>
@@ -208,12 +208,12 @@ namespace FishNet.Transporting.FishyWebRTC
 		/// <param name="server">True to process data received on the server.</param>
 		public override void IterateOutgoing(bool server)
 		{
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL || UNITY_EDITOR
 			if (server)
 				_server.IterateOutgoing();
 			else
 #endif
-			_client.IterateOutgoing();
+				_client.IterateOutgoing();
 		}
 		#endregion
 
@@ -265,7 +265,7 @@ namespace FishNet.Transporting.FishyWebRTC
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override void SendToClient(byte channelId, ArraySegment<byte> segment, int connectionId)
 		{
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL || UNITY_EDITOR
 			SanitizeChannel(ref channelId);
 			_server.SendToClient(channelId, segment, connectionId);
 #endif
@@ -288,7 +288,7 @@ namespace FishNet.Transporting.FishyWebRTC
 		/// <returns></returns>
 		public override int GetMaximumClients()
 		{
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL || UNITY_EDITOR
 			return _server.GetMaximumClients();
 #else
 			throw new Exception(serverOnlyException);
@@ -300,7 +300,7 @@ namespace FishNet.Transporting.FishyWebRTC
 		/// <param name="value"></param>
 		public override void SetMaximumClients(int value)
 		{
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL || UNITY_EDITOR
 			if (_server.GetConnectionState() != LocalConnectionState.Stopped)
 			{
 				if (base.NetworkManager.CanLog(LoggingType.Warning))
@@ -368,12 +368,12 @@ namespace FishNet.Transporting.FishyWebRTC
 		/// <param name="server">True to start server.</param>
 		public override bool StartConnection(bool server)
 		{
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL || UNITY_EDITOR
 			if (server)
 				return StartServer();
 			else
 #endif
-			return StartClient(_clientAddress);
+				return StartClient(_clientAddress);
 		}
 
 		/// <summary>
@@ -382,12 +382,12 @@ namespace FishNet.Transporting.FishyWebRTC
 		/// <param name="server">True to stop server.</param>
 		public override bool StopConnection(bool server)
 		{
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL || UNITY_EDITOR
 			if (server)
 				return StopServer();
 			else
 #endif
-			return StopClient();
+				return StopClient();
 		}
 
 		/// <summary>
@@ -397,7 +397,7 @@ namespace FishNet.Transporting.FishyWebRTC
 		/// <param name="immediately">True to abrutly stp the client socket without waiting socket thread.</param>
 		public override bool StopConnection(int connectionId, bool immediately)
 		{
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL || UNITY_EDITOR
 			return StopClient(connectionId, immediately);
 #else
 			throw new Exception(serverOnlyException);
@@ -420,7 +420,7 @@ namespace FishNet.Transporting.FishyWebRTC
 		/// </summary>
 		private bool StartServer()
 		{
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL || UNITY_EDITOR
 			_server.Initialize(this, _mtu);
 			return _server.StartConnection(iceServers, _port, _maximumClients, _origin);
 #else
@@ -433,7 +433,7 @@ namespace FishNet.Transporting.FishyWebRTC
 		/// </summary>
 		private bool StopServer()
 		{
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL || UNITY_EDITOR
 			return _server.StopConnection();
 #else
 			throw new Exception(serverOnlyException);
@@ -458,7 +458,7 @@ namespace FishNet.Transporting.FishyWebRTC
 			return _client.StopConnection();
 		}
 
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL || UNITY_EDITOR
 		/// <summary>
 		/// Stops a remote client on the server.
 		/// </summary>
@@ -499,7 +499,7 @@ namespace FishNet.Transporting.FishyWebRTC
 		#endregion
 
 		#region Editor.
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_EDITOR
 		private void OnValidate()
 		{
 			if (_mtu < 0)
