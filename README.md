@@ -4,13 +4,9 @@ You can now use UDP in the browser with FishNetworking!
 
 Based on [Bayou](https://github.com/FirstGearGames/Bayou) and [SimpleWebTransport](https://github.com/James-Frowen/SimpleWebTransport)
 
-Important:
+Limitations:
 - Clients cannot be tested in Unity Editor, **it only works in WebGL builds**
     - This is because the WebRTC client is built with JavaScript and is not implemented for other platforms
-- Server cannot be tested in Unity Editor, **it only works in a build** (and can't be a WebGL build)
-    - This is because there's probably an issue with `com.unity.webrtc` when running in the editor
-
-Limitations:
 - Only WebGL is supported for clients
   - You can use UDP on other platforms with a Multipass transport
 - There's no P2P support and host mode doesn't work
@@ -19,8 +15,8 @@ Limitations:
 - The server can be built for most platforms but only Linux Dedicated Server build has been tested
 
 Installation: 
-- Add `https://github.com/cakeslice/com.unity.webrtc.git` using the Package Manager (Add from git URL)
-  - This is a fork of `com.unity.webrtc` that has the compiled Linux binary that works with a Linux Dedicated Server build
+- Add `https://github.com/Unity-Technologies/com.unity.webrtc.git` using the Package Manager (Add from git URL)
+  - Make sure it's version `3.0.0-pre.5` or higher to build for Linux Dedicated Server
 - Copy this folder to `Assets/FishNet/Runtime/Transporting/Transports/`
 - Modify the assembly definition `Assets/FishNet/Runtime/FishNet.Runtime.asmdef` to include the `SimpleWebRTC` assembly:
 <img width="340" alt="example_assembly" src="https://user-images.githubusercontent.com/7516142/233031099-2ab4053f-e0c2-4191-8ceb-73f9fbaa1811.png">
