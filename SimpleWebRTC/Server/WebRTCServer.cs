@@ -1,4 +1,4 @@
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL || UNITY_EDITOR
 
 using System;
 using System.Collections.Generic;
@@ -80,14 +80,16 @@ namespace cakeslice.SimpleWebRTC
 		}
 
 		List<Common.ICEServer> iceServers;
+
+		[Obsolete]
 		public void Listen(List<Common.ICEServer> iceServers, int port, string origin)
 		{
 			this.iceServers = iceServers;
 			allowedOrigin = origin;
-			
+
 			WebRTC.Initialize();
 
-			listener = new HttpListener(); 
+			listener = new HttpListener();
 			listener.Prefixes.Add("http://" + "*:" + port + "/");
 			listener.Start();
 			Log.Info($"Server has started on port {port}");
@@ -115,13 +117,13 @@ namespace cakeslice.SimpleWebRTC
 							resp.Headers["Access-Control-Allow-Methods"] = "GET";
 							resp.Headers["Access-Control-Allow-Headers"] = "Content-Type";
 							resp.Headers["Content-Type"] = "application/json";
-							
-							if(req.HttpMethod == "OPTIONS")
+
+							if (req.HttpMethod == "OPTIONS")
 							{
 								resp.Close();
 								continue;
 							}
-							
+
 							Connection conn = new Connection(iceServers, GetNextId(), maxMessageSize, req.RemoteEndPoint.ToString(), AfterConnectionDisposed);
 							Connection.Config receiveConfig = new Connection.Config(
 									conn,
@@ -144,7 +146,7 @@ namespace cakeslice.SimpleWebRTC
 							resp.Headers["Access-Control-Allow-Headers"] = "Content-Type";
 							resp.Headers["Content-Type"] = "application/json";
 
-							if(req.HttpMethod == "OPTIONS")
+							if (req.HttpMethod == "OPTIONS")
 							{
 								resp.Close();
 								continue;
@@ -156,7 +158,8 @@ namespace cakeslice.SimpleWebRTC
 							answerThread.IsBackground = true;
 							answerThread.Start();
 						}
-						else {
+						else
+						{
 							resp.StatusCode = 400;
 							resp.Close();
 						}
@@ -229,40 +232,43 @@ namespace cakeslice.SimpleWebRTC
 
 				resp.Close(respBytes, false);
 			}
-			catch (ThreadInterruptedException e) { 
+			catch (ThreadInterruptedException e)
+			{
 				dispose = true;
-				Log.InfoException(e); 
+				Log.InfoException(e);
 			}
-			catch (ThreadAbortException e) { 
+			catch (ThreadAbortException e)
+			{
 				dispose = true;
-				Log.InfoException(e); 
+				Log.InfoException(e);
 			}
-			catch (Exception e) { 
+			catch (Exception e)
+			{
 				dispose = true;
-				Log.Exception(e); 
+				Log.Exception(e);
 			}
-			
-			if(dispose)
+
+			if (dispose)
 			{
 				Log.Warn("Closing connection due to exception");
 				conn.Dispose();
 			}
 		}
 		void SendAnswerThread(HttpListenerRequest req, HttpListenerResponse resp)
-		{	
+		{
 			try
 			{
 				string text = "";
 				using (var reader = new StreamReader(req.InputStream,
-                   req.ContentEncoding))
-        		{
+						 req.ContentEncoding))
+				{
 					text = reader.ReadToEnd();
 				}
-	
+
 				OfferResponse answer = JsonUtility.FromJson<OfferResponse>(text);
 				connections.TryGetValue(answer.connId, out Connection conn);
 
-				if(conn == null)
+				if (conn == null)
 				{
 					Log.Error("SendAnswer: Connection " + answer.connId + " not found!");
 					return;
@@ -283,8 +289,8 @@ namespace cakeslice.SimpleWebRTC
 					{
 
 					}
-						
-					foreach(string c in answer.candidates)
+
+					foreach (string c in answer.candidates)
 					{
 						var i = new RTCIceCandidateInit();
 						i.candidate = c;
@@ -296,12 +302,12 @@ namespace cakeslice.SimpleWebRTC
 					// Wait one second to gather candidates
 					Thread.Sleep(1000);
 
-					if(conn.iceCandidates.Count == 0 )
+					if (conn.iceCandidates.Count == 0)
 						Log.Error("No ICE candidates available to send");
 
 					string output = "{\n" + "\"candidates\": [";
 
-					for(int i = 0; i < conn.iceCandidates.Count; i++)
+					for (int i = 0; i < conn.iceCandidates.Count; i++)
 					{
 						string c = conn.iceCandidates[i].Candidate;
 
@@ -321,17 +327,23 @@ namespace cakeslice.SimpleWebRTC
 
 					receiveQueue.Enqueue(new Message(conn.connId, Common.EventType.Connected));
 				}
-				catch (ThreadInterruptedException e) { 
+				catch (ThreadInterruptedException e)
+				{
 					dispose = true;
-					Log.InfoException(e); }
-				catch (ThreadAbortException e) { 
+					Log.InfoException(e);
+				}
+				catch (ThreadAbortException e)
+				{
 					dispose = true;
-					Log.InfoException(e); }
-				catch (Exception e) { 
+					Log.InfoException(e);
+				}
+				catch (Exception e)
+				{
 					dispose = true;
-					Log.Exception(e); }
-				
-				if(dispose)
+					Log.Exception(e);
+				}
+
+				if (dispose)
 				{
 					Log.Warn("Closing connection due to exception");
 					conn.Dispose();
@@ -343,7 +355,7 @@ namespace cakeslice.SimpleWebRTC
 		}
 
 		void AfterConnectionDisposed(Connection conn)
-		{			
+		{
 			receiveQueue.Enqueue(new Message(conn.connId, Common.EventType.Disconnected));
 			connections.TryRemove(conn.connId, out Connection _);
 

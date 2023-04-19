@@ -1,4 +1,4 @@
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL || UNITY_EDITOR
 
 using System;
 using System.Threading;
@@ -72,13 +72,14 @@ namespace cakeslice.SimpleWebRTC
 					}
 					sendPending.Reset();
 
-					if(stream.ReadyState == RTCDataChannelState.Open)
+					if (stream.ReadyState == RTCDataChannelState.Open)
 					{
 						while (sendQueue.TryDequeue(out ArrayBuffer msg))
 						{
 							// check if connected before sending message
-							if (client.ConnectionState != RTCPeerConnectionState.Connected) { 
-								Log.Info($"SendLoop {conn} not connected"); return; 
+							if (client.ConnectionState != RTCPeerConnectionState.Connected)
+							{
+								Log.Info($"SendLoop {conn} not connected"); return;
 							}
 
 							int length = SendMessage(writeBuffer, 0, msg);
@@ -97,19 +98,23 @@ namespace cakeslice.SimpleWebRTC
 
 				Log.Info($"{conn} Not Connected");
 			}
-			catch (ThreadInterruptedException e) {
-					dispose = true;
-				 Log.InfoException(e); }
-			catch (ThreadAbortException e) {
-								dispose = true;
-				 Log.InfoException(e); }
+			catch (ThreadInterruptedException e)
+			{
+				dispose = true;
+				Log.InfoException(e);
+			}
+			catch (ThreadAbortException e)
+			{
+				dispose = true;
+				Log.InfoException(e);
+			}
 			catch (Exception e)
 			{
-								dispose = true;
+				dispose = true;
 				Log.Exception(e);
 			}
 
-			if(dispose)
+			if (dispose)
 			{
 				Profiler.EndThreadProfiling();
 				Log.Warn("Closing connection due to exception");
@@ -117,11 +122,11 @@ namespace cakeslice.SimpleWebRTC
 			}
 		}
 
-		static int SendMessage(byte[] buffer, int offset,ArrayBuffer msg)
+		static int SendMessage(byte[] buffer, int offset, ArrayBuffer msg)
 		{
 			msg.CopyTo(buffer, offset);
 			Log.DumpBuffer("Send", buffer, offset, buffer.Length);
-			
+
 			offset += msg.count;
 			return offset;
 		}

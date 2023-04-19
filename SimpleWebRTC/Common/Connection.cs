@@ -1,4 +1,4 @@
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL || UNITY_EDITOR
 
 using System;
 using System.Collections.Generic;
@@ -6,8 +6,6 @@ using System.Collections.Concurrent;
 using System.Threading;
 using Unity.WebRTC;
 using System.Net;
-using UnityEngine;
-using System.Text;
 using System.IO;
 using ConnectionId = System.UInt16;
 
@@ -51,37 +49,38 @@ namespace cakeslice.SimpleWebRTC
 			this.clientAddress = clientAddress;
 
 			client = new RTCPeerConnection();
-			
+
 			List<RTCIceServer> iceServers = new List<RTCIceServer>();
-			foreach(Common.ICEServer s in _iceServers)
+			foreach (Common.ICEServer s in _iceServers)
 			{
-				if(s.username == null || s.username == "")
+				if (s.username == null || s.username == "")
 					iceServers.Add(new RTCIceServer
-						{
-							urls = new[] {s.url}
-						});
+					{
+						urls = new[] { s.url }
+					});
 				else
 					iceServers.Add(new RTCIceServer
-						{
-							urls = new[] {s.url},
-							username = s.username,
-							credential = s.credential,
-							credentialType = RTCIceCredentialType.Password
-						});
+					{
+						urls = new[] { s.url },
+						username = s.username,
+						credential = s.credential,
+						credentialType = RTCIceCredentialType.Password
+					});
 			}
 
 			var configuration = new RTCConfiguration
 			{
 				iceServers = iceServers.ToArray()
 			};
-		   var error = client.SetConfiguration(ref configuration);
-         if(error != RTCErrorType.None)
+			var error = client.SetConfiguration(ref configuration);
+			if (error != RTCErrorType.None)
 			{
 				Log.Error("RTCError in client.SetConfiguration");
 			}
 
-			client.OnConnectionStateChange += state => {
-				if(state == RTCPeerConnectionState.Connected)
+			client.OnConnectionStateChange += state =>
+			{
+				if (state == RTCPeerConnectionState.Connected)
 				{
 					Thread u = new Thread(() =>
 					{
@@ -217,7 +216,7 @@ namespace cakeslice.SimpleWebRTC
 			(Connection conn, int _, ConcurrentQueue<Message> queue, BufferPool _) = receiveConfig;
 
 			RTCPeerConnection client = conn.client;
-	
+
 			bool dispose = false;
 			// TODO: Maybe we shouldn't close/dispose in all cases, only when actually disconnecting...
 
@@ -225,12 +224,13 @@ namespace cakeslice.SimpleWebRTC
 			{
 				ReadOneMessage(receiveConfig, bytes, dm);
 			}
-			catch (ObjectDisposedException e) { 
+			catch (ObjectDisposedException e)
+			{
 				dispose = true;
-				Log.InfoException(e); 
+				Log.InfoException(e);
 			}
 			catch (IOException e)
-			{	
+			{
 				dispose = true;
 				// this could happen if client disconnects
 				Log.Warn($"HandleReceiveMessage IOException\n{e.Message}");
@@ -248,8 +248,8 @@ namespace cakeslice.SimpleWebRTC
 				Log.Exception(e);
 				queue.Enqueue(new Message(conn.connId, e));
 			}
-			
-			if(dispose)
+
+			if (dispose)
 			{
 				Log.Warn("Closing connection due to exception");
 				conn.Dispose();
