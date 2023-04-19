@@ -17,8 +17,8 @@ Installation:
 - Add `https://github.com/cakeslice/com.unity.webrtc.git` using the Package Manager (Add from git URL)
   - This is a fork of `com.unity.webrtc` that has the compiled Linux binary that works with a Linux Dedicated Server build
 - Copy this folder to `Assets/FishNet/Runtime/Transporting/Transports/`
-- Modify the assembly definition `Assets/FishNet/Runtime/FishNet.Runtime.asmdef` to include the `SimpleWebRTC` and `Unity.WebRTC.Runtime` assemblies:
-<img width="348" alt="assemblies" src="https://user-images.githubusercontent.com/7516142/233090203-4a787338-25a4-48a7-9fb2-5e57beac04c9.png">
+- Modify the assembly definition `Assets/FishNet/Runtime/FishNet.Runtime.asmdef` to include the `SimpleWebRTC` assembly:
+<img width="340" alt="example_assembly" src="https://user-images.githubusercontent.com/7516142/233031099-2ab4053f-e0c2-4191-8ceb-73f9fbaa1811.png">
 
 - Add the `FishyWebRTC` transport component and use it in your `TransportManager`:
 <img width="327" alt="example_component" src="https://user-images.githubusercontent.com/7516142/233031818-7ad0c782-9b98-4f0a-896a-8690de758f9b.png">
