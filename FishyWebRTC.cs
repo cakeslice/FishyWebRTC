@@ -63,7 +63,7 @@ namespace FishNet.Transporting.FishyWebRTC
 		/// </summary>
 		[Tooltip("Use HTTPS for signaling.")]
 		[SerializeField]
-		private bool _HTTPS = true;
+		private bool _HTTPS = false;
 		/// <summary>
 		/// Address to connect.
 		/// </summary>
@@ -75,7 +75,7 @@ namespace FishNet.Transporting.FishyWebRTC
 		/// </summary>
 		[Tooltip("If you want to connect to the signaling server without a port.")]
 		[SerializeField]
-		private bool _noClientPort = true;
+		private bool _noClientPort = false;
 		#endregion
 
 		#region Private.
