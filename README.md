@@ -2,6 +2,8 @@ WebRTC transport plugin for [FishNetworking](https://github.com/FirstGearGames/F
 
 You can now use UDP in the browser with FishNetworking!
 
+Both `Reliable` and `Unreliable` channels are supported by this transport
+
 Based on [Bayou](https://github.com/FirstGearGames/Bayou) and [SimpleWebTransport](https://github.com/James-Frowen/SimpleWebTransport)
 
 Limitations:
