@@ -1,3 +1,5 @@
+#if UNITY_STANDALONE || UNITY_WEBGL || UNITY_SERVER || UNITY_EDITOR
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -220,3 +222,5 @@ namespace FishNet.Transporting.FishyWebRTC.Client
 		}
 	}
 }
+
+#endif

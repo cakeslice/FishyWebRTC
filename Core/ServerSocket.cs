@@ -1,4 +1,4 @@
-#if !UNITY_WEBGL || UNITY_EDITOR
+#if UNITY_STANDALONE || UNITY_SERVER || UNITY_EDITOR
 
 using FishNet.Utility.Performance;
 using System;

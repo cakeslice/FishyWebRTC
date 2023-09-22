@@ -1,3 +1,5 @@
+#if UNITY_STANDALONE || UNITY_WEBGL || UNITY_SERVER || UNITY_EDITOR
+
 using FishNet.Managing;
 using FishNet.Managing.Logging;
 using FishNet.Managing.Transporting;
@@ -469,8 +471,8 @@ namespace FishNet.Transporting.FishyWebRTC
 			return _server.StopConnection(connectionId, immediately);
 		}
 #endif
-		#endregion
-		#endregion
+#endregion
+#endregion
 
 		#region Channels.
 		/// <summary>
@@ -508,6 +510,8 @@ namespace FishNet.Transporting.FishyWebRTC
 				_mtu = MAXIMUM_MTU;
 		}
 #endif
-		#endregion
+#endregion
 	}
 }
+
+#endif
