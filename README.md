@@ -17,8 +17,8 @@ Limitations:
 - The server can be built for most platforms but only Linux Dedicated Server build has been tested
 
 Installation: 
-- Add `https://github.com/Unity-Technologies/com.unity.webrtc.git` using the Package Manager (Add from git URL)
-  - Make sure it's version `3.0.0-pre.5` or higher to build for Linux Dedicated Server
+- Add `https://github.com/Unity-Technologies/com.unity.webrtc.git#3.0.0-pre.5` using the Package Manager (Add from git URL)
+  - For now only `3.0.0-pre.5` is supported
 - Copy this folder to `Assets/FishNet/Runtime/Transporting/Transports/`
 - Modify the assembly definition `Assets/FishNet/Runtime/FishNet.Runtime.asmdef` to include the `SimpleWebRTC` assembly:
 <img width="340" alt="example_assembly" src="https://user-images.githubusercontent.com/7516142/233031099-2ab4053f-e0c2-4191-8ceb-73f9fbaa1811.png">
