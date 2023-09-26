@@ -1,4 +1,4 @@
-#if UNITY_STANDALONE || UNITY_SERVER || UNITY_EDITOR
+#if ENABLE_WEBRTC && (UNITY_STANDALONE || UNITY_SERVER || UNITY_EDITOR)
 
 using FishNet.Utility.Performance;
 using System;
